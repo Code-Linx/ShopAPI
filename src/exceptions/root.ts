@@ -2,12 +2,7 @@ export class HtttpsExceptions extends Error {
   errorCode: any;
   statusCode: number;
   error: any;
-  constructor(
-    message: string,
-    errorCode: ErrorCodes,
-    statusCode: number,
-    error: any
-  ) {
+  constructor(message: string, errorCode: ErrorCodes, statusCode: number, error: any) {
     super(message);
     this.message = message;
     this.errorCode = errorCode;
@@ -26,6 +21,7 @@ export enum ErrorCodes {
 
   DATABASE_ERROR = 2001, // Generic database failure
   DUPLICATE_ENTRY = 2002, // Unique constraint violation (e.g., email already registered)
+  UNPROCESSABLE_ENTITY = 2003,
 
   SERVER_ERROR = 5000, // General server error
 }
