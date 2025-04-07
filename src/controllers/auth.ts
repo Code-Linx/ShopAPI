@@ -9,30 +9,20 @@ import { UnprocessableEntity } from '../exceptions/validation';
 import { SignupSchema } from '../schema/users';
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    SignupSchema.parse(req.body);
-    const { email, name, password } = req.body;
-    let user = await prismaClient.user.findFirst({ where: { email } });
-    if (user) {
-      next(new BadRequestsExceptions('User already Exists', ErrorCodes.USER_ALREADY_EXISTS));
-    }
-    user = await prismaClient.user.create({
-      data: {
-        name,
-        email,
-        passwod: hashSync(password, 10),
-      },
-    });
-    res.json(user);
-  } catch (err: any) {
-    next(
-      new UnprocessableEntity(
-        err?.cause?.issues,
-        'Unprocessable Entity',
-        ErrorCodes.UNPROCESSABLE_ENTITY
-      )
-    );
+  SignupSchema.parse(req.body);
+  const { email, name, password } = req.body;
+  let user = await prismaClient.user.findFirst({ where: { email } });
+  if (user) {
+    next(new BadRequestsExceptions('User already Exists', ErrorCodes.USER_ALREADY_EXISTS));
   }
+  user = await prismaClient.user.create({
+    data: {
+      name,
+      email,
+      password: hashSync(password, 10),
+    },
+  });
+  res.json(user);
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -41,7 +31,7 @@ export const login = async (req: Request, res: Response) => {
   if (!user) {
     throw Error('User does not exist');
   }
-  if (!compareSync(password, user.passwod)) {
+  if (!compareSync(password, user.password)) {
     throw Error('Incorrect Password');
   }
   const token = jwt.sign(

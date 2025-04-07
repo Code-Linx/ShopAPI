@@ -22,6 +22,7 @@ export enum ErrorCodes {
   DATABASE_ERROR = 2001, // Generic database failure
   DUPLICATE_ENTRY = 2002, // Unique constraint violation (e.g., email already registered)
   UNPROCESSABLE_ENTITY = 2003,
+  INTERNAL_EXCEPTIONS = 30001,
 
   SERVER_ERROR = 5000, // General server error
 }
