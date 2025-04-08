@@ -16,8 +16,8 @@ export const errorHandler = (method: Function) => {
           error,
           ErrorCodes.INTERNAL_EXCEPTIONS
         );
-        next(exception);
       }
+      next(exception);
     }
   };
 };
