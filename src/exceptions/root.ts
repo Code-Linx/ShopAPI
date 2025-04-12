@@ -18,6 +18,7 @@ export enum ErrorCodes {
   TOKEN_EXPIRED = 1004, // JWT token expired
   ACCOUNT_LOCKED = 1005, // Too many failed login attempts
   USER_ALREADY_EXISTS = 1006, // User already exists
+  PRODUCT_NOT_FOUND = 1007,
 
   DATABASE_ERROR = 2001, // Generic database failure
   DUPLICATE_ENTRY = 2002, // Unique constraint violation (e.g., email already registered)
