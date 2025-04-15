@@ -37,6 +37,7 @@ model Address {
   lineTwo   String?
   city      String
   country   String
+  pinCode   String // <-- Add this line
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
