@@ -19,6 +19,7 @@ export enum ErrorCodes {
   ACCOUNT_LOCKED = 1005, // Too many failed login attempts
   USER_ALREADY_EXISTS = 1006, // User already exists
   PRODUCT_NOT_FOUND = 1007,
+  ADDRESS_NOT_FOUND = 1008,
 
   DATABASE_ERROR = 2001, // Generic database failure
   DUPLICATE_ENTRY = 2002, // Unique constraint violation (e.g., email already registered)
