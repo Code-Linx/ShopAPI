@@ -6,6 +6,10 @@ import { ErrorCodes } from '../exceptions/root';
 
 export const addAddress = async (req: Request, res: Response) => {
   AddressSchema.parse(req.body);
+  // Check if req.user is defined
+  if (!req.user) {
+    return res.status(401).json({ message: 'User not authenticated' });
+  }
 
   const address = await prismaClient.address.create({
     data: {
@@ -29,6 +33,10 @@ export const deleteAddress = async (req: Request, res: Response) => {
 };
 
 export const listAddress = async (req: Request, res: Response) => {
+  // Check if req.user is defined
+  if (!req.user) {
+    return res.status(401).json({ message: 'User not authenticated' });
+  }
   const address = await prismaClient.address.findMany({
     where: {
       userId: req.user.id,
