@@ -5,8 +5,8 @@ import adminMiddleWare from '../middlewares/admin';
 import { addAddress, deleteAddress, listAddress } from '../controllers/users';
 
 const userRoutes: Router = Router();
-userRoutes.post('/address', [authMiddleWare], errorHandler(addAddress));
-userRoutes.delete('/address/:id', [authMiddleWare], errorHandler(deleteAddress));
-userRoutes.get('/address', [authMiddleWare], errorHandler(listAddress));
+userRoutes.post('/', [authMiddleWare], errorHandler(addAddress));
+userRoutes.delete('/:id', [authMiddleWare], errorHandler(deleteAddress));
+userRoutes.get('/', [authMiddleWare], errorHandler(listAddress));
 
 export default userRoutes;

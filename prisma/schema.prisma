@@ -37,7 +37,7 @@ model Address {
   lineTwo   String?
   city      String
   country   String
-  pinCode   String // <-- Add this line
+  pinCode   String   @db.VarChar(6) // Enforce 6 characters in the database
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
