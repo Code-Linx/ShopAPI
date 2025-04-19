@@ -14,6 +14,7 @@ export const errorHandler = (method: Function) => {
         exception = error;
       } else {
         if (error instanceof ZodError) {
+          console.error('🛑 Zod validation error:', error.errors);
           exception = new BadRequestsExceptions(
             'Unprocessable Entity',
             ErrorCodes.UNPROCESSABLE_ENTITY

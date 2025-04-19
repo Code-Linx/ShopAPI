@@ -20,6 +20,7 @@ export enum ErrorCodes {
   USER_ALREADY_EXISTS = 1006, // User already exists
   PRODUCT_NOT_FOUND = 1007,
   ADDRESS_NOT_FOUND = 1008,
+  ADDRESS_DOES_NOT_BELONG_TO_USER = 1009,
 
   DATABASE_ERROR = 2001, // Generic database failure
   DUPLICATE_ENTRY = 2002, // Unique constraint violation (e.g., email already registered)
