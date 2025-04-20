@@ -47,6 +47,7 @@ export const listAddress = async (req: Request, res: Response) => {
   res.json({ address });
 };
 
+//handler to update user address
 export const updateUser = async (req: Request, res: Response) => {
   const validatedData = UpdateUserSchema.parse(req.body);
   let shippingAddress: Address;
@@ -95,3 +96,5 @@ export const updateUser = async (req: Request, res: Response) => {
   });
   res.json(updatedUser);
 };
+
+export const cartConroller = async (req: Request, res: Response) => {};
