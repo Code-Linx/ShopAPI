@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createCartSchema } from '../schema/cart';
+import { ChangeQuantitySchema, createCartSchema } from '../schema/cart';
 import { Product } from '@prisma/client';
 import { prismaClient } from '..';
 import { NotFoundExceptions } from '../exceptions/not-found';
@@ -82,6 +82,48 @@ export const deleteItemFromCart = async (req: Request, res: Response) => {
   res.json({ success: true, message: 'Item deleted' });
 };
 
-export const changeQuantity = async (req: Request, res: Response) => {};
+export const changeQuantity = async (req: Request, res: Response) => {
+  const userId = req.user.id;
+  const validatedData = ChangeQuantitySchema.parse(req.body);
 
-export const getCart = async (req: Request, res: Response) => {};
+  const cartItem = await prismaClient.cartItem.findUnique({
+    where: {
+      id: +req.params.id,
+    },
+  });
+
+  if (!cartItem) {
+    throw new NotFoundExceptions('Cart Not Found', ErrorCodes.CART_NOT_FOUND);
+  }
+
+  if (cartItem.userId !== userId) {
+    throw new UnauthorizedHttpException(
+      'Unauthorized access to cart item.',
+      ErrorCodes.UNAUTHORIZED_ACCESS
+    );
+  }
+
+  const updatedCart = await prismaClient.cartItem.update({
+    where: {
+      id: +req.params.id,
+    },
+    data: {
+      quantity: validatedData.quantity,
+    },
+  });
+
+  res.json(updatedCart);
+};
+
+export const getCart = async (req: Request, res: Response) => {
+  const cart = await prismaClient.cartItem.findMany({
+    where: {
+      userId: req.user.id,
+    },
+    include: {
+      product: true,
+    },
+  });
+
+  res.json(cart);
+};
