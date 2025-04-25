@@ -97,4 +97,3 @@ export const updateUser = async (req: Request, res: Response) => {
   res.json(updatedUser);
 };
 
-export const cartConroller = async (req: Request, res: Response) => {};
