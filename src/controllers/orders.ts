@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prismaClient } from '..';
 import { NotFoundExceptions } from '../exceptions/not-found';
 import { ErrorCodes } from '../exceptions/root';
+import { UnauthorizedHttpException } from '../exceptions/unauthorized';
 
 export const createOrder = async (req: Request, res: Response) => {
   return await prismaClient.$transaction(async (tx) => {
@@ -72,8 +73,66 @@ export const createOrder = async (req: Request, res: Response) => {
   });
 };
 
-export const listOrders = async (req: Request, res: Response) => {};
+export const listOrders = async (req: Request, res: Response) => {
+  const order = await prismaClient.order.findMany({
+    where: {
+      userId: req.user.id,
+    },
+  });
+  res.json(order);
+};
 
-export const canceleOrder = async (req: Request, res: Response) => {};
+export const cancelOrder = async (req: Request, res: Response) => {
+  return await prismaClient.$transaction(async (tx) => {
+    const orderId = +req.params.id;
 
-export const geteOrderById = async (req: Request, res: Response) => {};
+    const order = await tx.order.findUnique({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundExceptions('Order not found', ErrorCodes.ORDER_NOT_FOUND);
+    }
+
+    // Ensure user owns the order
+    if (order.userId !== req.user.id) {
+      throw new UnauthorizedHttpException(
+        'You are not authorized to cancel this order',
+        ErrorCodes.UNAUTHORIZED_ACCESS
+      );
+    }
+
+    const updatedOrder = await tx.order.update({
+      where: { id: orderId },
+      data: { status: 'CANCELLED' },
+    });
+
+    await tx.orderEvent.create({
+      data: {
+        orderId: updatedOrder.id,
+        status: 'CANCELLED',
+      },
+    });
+
+    res.json(updatedOrder);
+  });
+};
+
+export const geteOrderById = async (req: Request, res: Response) => {
+  try {
+    const order = await prismaClient.order.findFirstOrThrow({
+      where: {
+        id: +req.params.id,
+      },
+      include: {
+        product: true,
+        orderEvent: true,
+      },
+    });
+    res.json(order);
+  } catch (err) {
+    throw new NotFoundExceptions('Order Not Found', ErrorCodes.ORDER_NOT_FOUND);
+  }
+};
