@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
-import { AddressSchema, UpdateUserSchema } from '../schema/users';
+import { AddressSchema, changeUserRoleSchema, UpdateUserSchema } from '../schema/users';
 import { prismaClient } from '..';
 import { NotFoundExceptions } from '../exceptions/not-found';
 import { ErrorCodes } from '../exceptions/root';
 import { Address } from '@prisma/client';
 import { BadRequestsExceptions } from '../exceptions/bad-requests';
+import { internalExceptions } from '../exceptions/internal-exceptions';
 
 export const addAddress = async (req: Request, res: Response) => {
   AddressSchema.parse(req.body);
@@ -97,3 +98,54 @@ export const updateUser = async (req: Request, res: Response) => {
   res.json(updatedUser);
 };
 
+export const listUsers = async (req: Request, res: Response) => {
+  try {
+    const skip = req.query.skip ? parseInt(req.query.skip as string, 10) : 0;
+
+    const users = await prismaClient.user.findMany({
+      skip,
+      take: 5,
+    });
+
+    res.json(users);
+  } catch (err) {
+    // Throw your custom exception instead
+    throw new internalExceptions('Failed to fetch users', err, ErrorCodes.FAILED_TO_FETCH_USERS);
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const user = await prismaClient.user.findFirstOrThrow({
+      where: {
+        id: +req.params.id,
+      },
+      include: {
+        addresses: true,
+      },
+    });
+    res.json(user);
+  } catch (err) {
+    throw new NotFoundExceptions('User Not Found', ErrorCodes.USER_NOT_FOUND);
+  }
+};
+
+export const changeUserRole = async (req: Request, res: Response) => {
+  try {
+    // Validate request body
+    const parsedData = changeUserRoleSchema.parse(req.body);
+
+    const user = await prismaClient.user.update({
+      where: {
+        id: +req.params.id,
+      },
+      data: {
+        role: parsedData.role,
+      },
+    });
+
+    res.json(user);
+  } catch (err) {
+    throw new NotFoundExceptions('User Not Found', ErrorCodes.USER_NOT_FOUND);
+  }
+};
