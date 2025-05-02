@@ -23,6 +23,7 @@ export enum ErrorCodes {
   ADDRESS_DOES_NOT_BELONG_TO_USER = 1009,
   CART_NOT_FOUND = 1010,
   ORDER_NOT_FOUND = 1011,
+  FAILED_TO_FETCH_USERS = 1012,
 
   DATABASE_ERROR = 2001, // Generic database failure
   DUPLICATE_ENTRY = 2002, // Unique constraint violation (e.g., email already registered)
