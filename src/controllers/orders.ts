@@ -3,6 +3,8 @@ import { prismaClient } from '..';
 import { NotFoundExceptions } from '../exceptions/not-found';
 import { ErrorCodes } from '../exceptions/root';
 import { UnauthorizedHttpException } from '../exceptions/unauthorized';
+import { orderEventStatus } from '@prisma/client';
+import { internalExceptions } from '../exceptions/internal-exceptions';
 
 export const createOrder = async (req: Request, res: Response) => {
   return await prismaClient.$transaction(async (tx) => {
@@ -135,4 +137,101 @@ export const geteOrderById = async (req: Request, res: Response) => {
   } catch (err) {
     throw new NotFoundExceptions('Order Not Found', ErrorCodes.ORDER_NOT_FOUND);
   }
+};
+
+export const listAllOrders = async (req: Request, res: Response) => {
+  try {
+    let whereClause: { status?: orderEventStatus } = {};
+
+    const statusParam = req.query.status;
+    const skip = req.query.skip ? parseInt(req.query.skip as string, 10) : 0;
+
+    if (typeof statusParam === 'string') {
+      const upperStatus = statusParam.toUpperCase() as orderEventStatus;
+
+      if (Object.values(orderEventStatus).includes(upperStatus)) {
+        whereClause.status = upperStatus;
+      }
+    }
+
+    const orders = await prismaClient.order.findMany({
+      where: whereClause,
+      skip,
+      take: 5,
+    });
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        message: `No orders found with status "${whereClause.status ?? 'ANY'}".`,
+        data: [],
+      });
+    }
+
+    res.json({ message: 'Orders fetched successfully.', data: orders });
+  } catch (err) {
+    throw new internalExceptions('Failed to fetch orders', err, ErrorCodes.SERVER_ERROR);
+  }
+};
+
+export const changeStatus = async (req: Request, res: Response) => {
+  try {
+    const result = await prismaClient.$transaction(async (tx) => {
+      // Update the order status
+      const order = await tx.order.update({
+        where: {
+          id: +req.params.id,
+        },
+        data: {
+          status: req.body.status,
+        },
+      });
+
+      // Create a related order event
+      await tx.orderEvent.create({
+        data: {
+          orderId: order.id,
+          status: req.body.status,
+        },
+      });
+
+      return order;
+    });
+
+    res.json(result);
+  } catch (err) {
+    throw new NotFoundExceptions('Order Not Found', ErrorCodes.ORDER_NOT_FOUND);
+  }
+};
+
+export const listUsersOrders = async (req: Request, res: Response) => {
+  const userId = parseInt(req.params.id, 10);
+  const status = req.params.status;
+
+  let whereClause: any = {
+    userId,
+  };
+
+  if (status) {
+    whereClause.status = status;
+  }
+
+  const skip = req.query.skip ? parseInt(req.query.skip as string, 10) : 0;
+
+  const orders = await prismaClient.order.findMany({
+    where: whereClause,
+    skip,
+    take: 5,
+  });
+
+  if (orders.length === 0) {
+    return res.status(404).json({
+      message: `No orders found for user ${userId}${status ? ` with status "${status}"` : ''}.`,
+      data: [],
+    });
+  }
+
+  res.json({
+    message: 'Orders fetched successfully.',
+    data: orders,
+  });
 };
