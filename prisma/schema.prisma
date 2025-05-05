@@ -69,6 +69,7 @@ model Product {
   CartItem     CartItem[]
   OrderProduct OrderProduct[]
 
+  @@fulltext([name, description, tags]) // 👈 full-text index
   @@map("product")
 }
 
