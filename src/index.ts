@@ -5,9 +5,42 @@ import { PrismaClient } from '@prisma/client';
 import morgan from 'morgan';
 import { errorMiddleware } from './middlewares/error';
 import { SignupSchema } from './schema/users';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import cors from 'cors';
 
 const app: Express = express();
+
 app.use(express.json());
+
+// ✅ Security middlewares
+app.use(helmet()); // Sets various HTTP headers to secure app
+app.use(
+  cors({
+    /* origin: ['https://yourfrontend.com'],
+    credentials: true, */
+  })
+); // Enables CORS
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:'],
+    },
+  })
+);
+
+// ✅ Rate limiter
+const limiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes
+  max: 3,
+  message: 'Too many requests, please try again after 3 minutes.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
 // Use Morgan for logging
 app.use(morgan('dev')); // 'dev' format gives concise logs
 
