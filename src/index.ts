@@ -67,6 +67,23 @@ export const prismaClient = new PrismaClient({
   },
 });
 
+// Example vulnerable-like route (for testing only)
+app.get('/test-users', async (req: Request, res: Response) => {
+  const { email } = req.query;
+
+  try {
+    const user = await prismaClient.user.findFirst({
+      where: {
+        email: email as string,
+      },
+    });
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal Server Error', error });
+  }
+});
+
 app.use(errorMiddleware);
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
